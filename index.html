@@ -1,0 +1,1409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Swipe Save Studio - AI Ad Copy Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #5B21B6;
+            --primary-light: #7C3AED;
+            --primary-dark: #4C1D95;
+            --secondary: #EC4899;
+            --secondary-light: #F472B6;
+            --secondary-dark: #BE185D;
+            --accent: #8B5CF6;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+            --neutral-900: #0F172A;
+            --neutral-800: #1E293B;
+            --neutral-700: #334155;
+            --neutral-600: #475569;
+            --neutral-500: #64748B;
+            --neutral-400: #94A3B8;
+            --neutral-300: #CBD5E1;
+            --neutral-200: #E2E8F0;
+            --neutral-100: #F1F5F9;
+            --text-primary: #0F172A;
+            --text-secondary: #475569;
+            --text-muted: #94A3B8;
+            --border: #E2E8F0;
+            --bg-primary: #FFFFFF;
+            --bg-secondary: #F8FAFC;
+            --bg-tertiary: #F1F5F9;
+            --bg-gradient: linear-gradient(135deg, #F8FAFC 0%, #FFFFFF 100%);
+            --glow-primary: 0 4px 20px rgba(91, 33, 182, 0.15);
+            --glow-secondary: 0 4px 20px rgba(236, 72, 153, 0.15);
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Inter', sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* MODERN GRADIENT BACKGROUNDS */
+        .gradient-cyan-blue {
+            background: linear-gradient(135deg, #5B21B6, #7C3AED);
+        }
+
+        .gradient-purple-pink {
+            background: linear-gradient(135deg, #7C3AED, #EC4899);
+        }
+
+        .gradient-glow-cyan {
+            background: radial-gradient(circle at 50% 50%, rgba(91, 33, 182, 0.1), transparent 50%);
+        }
+
+        /* CONTAINER */
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* QUESTIONNAIRE PAGE */
+        .page {
+            display: none;
+            flex: 1;
+            width: 100%;
+            min-height: 100vh;
+        }
+
+        .page.active {
+            display: flex;
+            flex-direction: column;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* QUESTIONNAIRE PAGE */
+        #questionnaire-page {
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, #FFFFFF 0%, #F8FAFC 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .questionnaire-wrapper {
+            width: 100%;
+            max-width: 600px;
+            z-index: 10;
+        }
+
+        .questionnaire-header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .questionnaire-logo {
+            font-size: 32px;
+            margin-bottom: 16px;
+        }
+
+        .questionnaire-title {
+            font-size: 32px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #5B21B6, #EC4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 12px;
+        }
+
+        .questionnaire-subtitle {
+            font-size: 16px;
+            color: var(--text-secondary);
+            margin-bottom: 30px;
+        }
+
+        /* PROGRESS INDICATOR */
+        .progress-container {
+            margin-bottom: 40px;
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+
+        .progress-step {
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .progress-step.active {
+            color: var(--primary);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #E2E8F0;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #5B21B6, #EC4899);
+            border-radius: 3px;
+            transition: width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: var(--glow-primary);
+        }
+
+        /* QUESTION CARD */
+        .question-card {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 32px;
+            backdrop-filter: blur(10px);
+            margin-bottom: 30px;
+            display: none;
+            animation: slideIn 0.5s ease-out;
+            box-shadow: var(--shadow-md);
+        }
+
+        .question-card.active {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .question-number {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--primary);
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .question-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            color: var(--text-primary);
+        }
+
+        /* OPTIONS */
+        .options-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option-btn {
+            position: relative;
+            padding: 14px 16px;
+            border: 1px solid var(--border);
+            background: var(--bg-secondary);
+            border-radius: 10px;
+            cursor: pointer;
+            text-align: left;
+            font-size: 14px;
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .option-btn:hover {
+            background: var(--bg-tertiary);
+            border-color: var(--primary);
+            transform: translateX(4px);
+        }
+
+        .option-btn.selected {
+            background: linear-gradient(135deg, #EDE9FE, #FCE7F3);
+            border-color: var(--primary);
+            box-shadow: var(--glow-primary);
+        }
+
+        .option-checkbox {
+            width: 18px;
+            height: 18px;
+            border: 2px solid var(--primary);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: all 0.2s ease;
+        }
+
+        .option-btn.selected .option-checkbox {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .option-btn.selected .option-checkbox::after {
+            content: '✓';
+            color: #FFFFFF;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        /* TEXT INPUT */
+        .text-input-group {
+            margin-bottom: 20px;
+        }
+
+        .text-input {
+            width: 100%;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px 16px;
+            color: var(--text-primary);
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+
+        .text-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .text-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: var(--bg-primary);
+            box-shadow: var(--glow-primary);
+        }
+
+        .text-textarea {
+            resize: vertical;
+            min-height: 100px;
+            font-family: inherit;
+        }
+
+        /* ACTION BUTTONS */
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 40px;
+            justify-content: space-between;
+        }
+
+        .btn {
+            padding: 12px 28px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #5B21B6, #7C3AED);
+            color: #FFFFFF;
+            box-shadow: var(--glow-primary);
+            border: 1px solid transparent;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(91, 33, 182, 0.3);
+            background: linear-gradient(135deg, #4C1D95, #5B21B6);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: var(--bg-secondary);
+            color: var(--primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-tertiary);
+            border-color: var(--primary);
+        }
+
+        .btn-skip {
+            background: transparent;
+            color: var(--text-secondary);
+            border: none;
+        }
+
+        .btn-skip:hover {
+            color: var(--accent-cyan);
+        }
+
+        /* DASHBOARD PAGE */
+        .dashboard-container {
+            display: flex;
+            flex: 1;
+            height: 100vh;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: 260px;
+            background: var(--bg-primary);
+            border-right: 1px solid var(--border);
+            padding: 24px 16px;
+            overflow-y: auto;
+            position: sticky;
+            top: 0;
+            backdrop-filter: blur(10px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 40px;
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text-primary);
+            cursor: pointer;
+        }
+
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, #5B21B6, #EC4899);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .nav-section {
+            margin-bottom: 28px;
+        }
+
+        .nav-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            margin-bottom: 6px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: var(--text-secondary);
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .nav-label, .logo {
+            color: var(--text-primary);
+        }
+
+        .nav-item:hover {
+            background: var(--bg-secondary);
+            color: var(--primary);
+        }
+
+        .nav-item.active {
+            background: linear-gradient(135deg, #EDE9FE, #FCE7F3);
+            color: var(--primary);
+            border-left: 3px solid var(--primary);
+            padding-left: 9px;
+        }
+
+        /* MAIN CONTENT */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .header {
+            background: var(--bg-primary);
+            border-bottom: 1px solid var(--border);
+            padding: 16px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            backdrop-filter: blur(10px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .header-title {
+            font-size: 20px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #5B21B6, #EC4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #5B21B6, #EC4899);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #FFFFFF;
+            font-size: 14px;
+        }
+
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 32px;
+        }
+
+        /* SECTIONS */
+        .section-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* METRICS GRID */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 16px;
+            margin-bottom: 40px;
+        }
+
+        .metric-card {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #5B21B6, #EC4899);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .metric-card:hover {
+            border-color: var(--primary);
+            background: var(--bg-secondary);
+            transform: translateY(-4px);
+            box-shadow: var(--glow-primary);
+        }
+
+        .metric-card:hover::before {
+            opacity: 1;
+        }
+
+        .metric-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .metric-value {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--primary);
+        }
+
+        .metric-change {
+            font-size: 12px;
+            color: var(--success);
+            font-weight: 600;
+        }
+
+        /* VARIATIONS DISPLAY */
+        .variations-container {
+            margin-bottom: 40px;
+        }
+
+        .variation-item {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 16px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .variation-item:hover {
+            border-color: var(--primary);
+            background: var(--bg-secondary);
+            transform: translateX(4px);
+            box-shadow: var(--glow-primary);
+        }
+
+        .variation-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 16px;
+        }
+
+        .variation-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .variation-score {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .variation-framework {
+            display: inline-block;
+            background: linear-gradient(135deg, #EDE9FE, #FCE7F3);
+            color: var(--primary);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .variation-text {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+
+        .variation-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 16px;
+        }
+
+        .action-btn {
+            padding: 6px 12px;
+            background: var(--bg-secondary);
+            color: var(--primary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .action-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(91, 33, 182, 0.15), transparent);
+            transition: left 0.4s ease;
+        }
+
+        .action-btn:hover {
+            background: var(--bg-tertiary);
+            border-color: var(--primary);
+            box-shadow: var(--glow-primary);
+            transform: translateY(-1px);
+        }
+
+        .action-btn:hover::before {
+            left: 100%;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .dashboard-container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                padding: 12px;
+                border-right: none;
+                border-bottom: 1px solid rgba(6, 182, 212, 0.1);
+                display: flex;
+                gap: 12px;
+                overflow-x: auto;
+                max-height: 70px;
+            }
+
+            .nav-section {
+                display: flex;
+                gap: 8px;
+                margin-bottom: 0;
+                flex-wrap: nowrap;
+            }
+
+            .nav-label {
+                display: none;
+            }
+
+            .nav-item {
+                margin-bottom: 0;
+                white-space: nowrap;
+            }
+
+            .content {
+                padding: 16px;
+            }
+
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .questionnaire-wrapper {
+                padding: 20px;
+            }
+
+            .question-title {
+                font-size: 20px;
+            }
+        }
+
+        /* ANIMATIONS */
+        .spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(6, 182, 212, 0.3);
+            border-top-color: var(--accent-cyan);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* SCROLLBAR */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(6, 182, 212, 0.3);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(6, 182, 212, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- QUESTIONNAIRE PAGE -->
+        <div id="questionnaire-page" class="page active">
+            <div class="questionnaire-wrapper">
+                <div class="questionnaire-header">
+                    <div class="questionnaire-logo">⚡</div>
+                    <h1 class="questionnaire-title">Swipe Save Studio</h1>
+                    <p class="questionnaire-subtitle">Generate AI ad copy in 2 minutes</p>
+                </div>
+
+                <div class="progress-container">
+                    <div class="progress-info">
+                        <span class="progress-step active">
+                            Step <span id="step-current">1</span>
+                        </span>
+                        <span class="progress-step">of 10</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progress-fill" style="width: 10%;"></div>
+                    </div>
+                </div>
+
+                <form id="questionnaire-form">
+                    <!-- Q1: Market -->
+                    <div class="question-card active" data-question="1">
+                        <div class="question-number">Question 1 of 10</div>
+                        <h2 class="question-title">What market are you targeting?</h2>
+                        <div class="options-grid">
+                            <button type="button" class="option-btn" data-value="saas" onclick="selectOption(this, 'market')">
+                                <div class="option-checkbox"></div>
+                                <span>SaaS / Software Products</span>
+                            </button>
+                            <button type="button" class="option-btn" data-value="ecom" onclick="selectOption(this, 'market')">
+                                <div class="option-checkbox"></div>
+                                <span>E-commerce / Retail</span>
+                            </button>
+                            <button type="button" class="option-btn" data-value="services" onclick="selectOption(this, 'market')">
+                                <div class="option-checkbox"></div>
+                                <span>Services / Agencies</span>
+                            </button>
+                            <button type="button" class="option-btn" data-value="leadgen" onclick="selectOption(this, 'market')">
+                                <div class="option-checkbox"></div>
+                                <span>Lead Generation / B2B</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Q2: Customer -->
+                    <div class="question-card" data-question="2">
+                        <div class="question-number">Question 2 of 10</div>
+                        <h2 class="question-title">Who is your ideal customer?</h2>
+                        <div class="text-input-group">
+                            <input type="text" class="text-input" placeholder="e.g., Marketing managers at tech startups" data-field="customer" id="q2-input">
+                        </div>
+                        <div class="button-group" style="justify-content: flex-end;">
+                            <button type="button" class="btn btn-primary" onclick="handleTextNext('q2-input', 'customer')">Next →</button>
+                        </div>
+                    </div>
+
+                    <!-- Q3: Pain Point -->
+                    <div class="question-card" data-question="3">
+                        <div class="question-number">Question 3 of 10</div>
+                        <h2 class="question-title">What's their biggest pain point?</h2>
+                        <div class="text-input-group">
+                            <textarea class="text-input text-textarea" placeholder="What keeps them up at night?" data-field="painpoint" id="q3-input"></textarea>
+                        </div>
+                        <div class="button-group" style="justify-content: flex-end;">
+                            <button type="button" class="btn btn-primary" onclick="handleTextNext('q3-input', 'painpoint')">Next →</button>
+                        </div>
+                    </div>
+
+                    <!-- Q4: Desired Outcome -->
+                    <div class="question-card" data-question="4">
+                        <div class="question-number">Question 4 of 10</div>
+                        <h2 class="question-title">What's the desired outcome?</h2>
+                        <div class="text-input-group">
+                            <textarea class="text-input text-textarea" placeholder="What do they want to achieve?" data-field="outcome" id="q4-input"></textarea>
+                        </div>
+                        <div class="button-group" style="justify-content: flex-end;">
+                            <button type="button" class="btn btn-primary" onclick="handleTextNext('q4-input', 'outcome')">Next →</button>
+                        </div>
+                    </div>
+
+                    <!-- Q5: Budget -->
+                    <div class="question-card" data-question="5">
+                        <div class="question-number">Question 5 of 10</div>
+                        <h2 class="question-title">What's their budget range?</h2>
+                        <div class="options-grid">
+                            <button type="button" class="option-btn" data-value="under1k" onclick="selectOption(this, 'budget')">
+                                <div class="option-checkbox"></div>
+                                <span>Under $1,000</span>
+                            </button>
+                            <button type="button" class="option-btn" data-value="1k-5k" onclick="selectOption(this, 'budget')">
+                                <div class="option-checkbox"></div>
+                                <span>$1,000 - $5,000</span>
+                            </button>
+                            <button type="button" class="option-btn" data-value="5k-20k" onclick="selectOption(this, 'budget')">
+                                <div class="option-checkbox"></div>
+                                <span>$5,000 - $20,000</span>
+                            </button>
+                            <button type="button" class="option-btn" data-value="20k+" onclick="selectOption(this, 'budget')">
+                                <div class="option-checkbox"></div>
+                                <span>$20,000+</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Q6: Brand Voice -->
+                    <div class="question-card" data-question="6">
+                        <div class="question-number">Question 6 of 10</div>
+                        <h2 class="question-title">Describe your brand voice</h2>
+                        <div class="options-grid">
+                            <button type="button" class="option-btn" data-value="professional" onclick="selectOption(this, 'tone')">
+                                <div class="option-checkbox"></div>
+                                <span>Professional & Authoritative</span>
+                            </button>
+                            <button type="button" class="option-btn" data-value="casual" onclick="selectOption(this, 'tone')">
+                                <div class="option-checkbox"></div>
+                                <span>Casual & Friendly</span>
+                            </button>
+                            <button type="button" class="option-btn" data-value="data" onclick="selectOption(this, 'tone')">
+                                <div class="option-checkbox"></div>
+                                <span>Data-Driven & Technical</span>
+                            </button>
+                            <button type="button" class="option-btn" data-value="emotional" onclick="selectOption(this, 'tone')">
+                                <div class="option-checkbox"></div>
+                                <span>Emotional & Inspirational</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Q7: Discovery -->
+                    <div class="question-card" data-question="7">
+                        <div class="question-number">Question 7 of 10</div>
+                        <h2 class="question-title">How do customers discover you?</h2>
+                        <div class="options-grid">
+                            <button type="button" class="option-btn" data-value="search" onclick="selectOption(this, 'discovery')">
+                                <div class="option-checkbox"></div>
+                                <span>Search Engines (SEO/SEM)</span>
+                            </button>
+                            <button type="button" class="option-btn" data-value="social" onclick="selectOption(this, 'discovery')">
+                                <div class="option-checkbox"></div>
+                                <span>Social Media</span>
+                            </button>
+                            <button type="button" class="option-btn" data-value="ads" onclick="selectOption(this, 'discovery')">
+                                <div class="option-checkbox"></div>
+                                <span>Paid Ads</span>
+                            </button>
+                            <button type="button" class="option-btn" data-value="word" onclick="selectOption(this, 'discovery')">
+                                <div class="option-checkbox"></div>
+                                <span>Word of Mouth</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Q8: Competitors -->
+                    <div class="question-card" data-question="8">
+                        <div class="question-number">Question 8 of 10</div>
+                        <h2 class="question-title">Who are your main competitors?</h2>
+                        <div class="text-input-group">
+                            <textarea class="text-input text-textarea" placeholder="List competitor names or products..." data-field="competitors" id="q8-input"></textarea>
+                        </div>
+                        <div class="button-group" style="justify-content: flex-end;">
+                            <button type="button" class="btn btn-primary" onclick="handleTextNext('q8-input', 'competitors')">Next →</button>
+                        </div>
+                    </div>
+
+                    <!-- Q9: Key Message -->
+                    <div class="question-card" data-question="9">
+                        <div class="question-number">Question 9 of 10</div>
+                        <h2 class="question-title">What's your key message?</h2>
+                        <div class="text-input-group">
+                            <textarea class="text-input text-textarea" placeholder="What do you want to communicate?" data-field="message" id="q9-input"></textarea>
+                        </div>
+                        <div class="button-group" style="justify-content: flex-end;">
+                            <button type="button" class="btn btn-primary" onclick="handleTextNext('q9-input', 'message')">Next →</button>
+                        </div>
+                    </div>
+
+                    <!-- Q10: Review -->
+                    <div class="question-card" data-question="10">
+                        <div class="question-number">Question 10 of 10</div>
+                        <h2 class="question-title">Ready to generate your ad copy?</h2>
+                        <p style="color: var(--text-secondary); margin-bottom: 24px;">
+                            Based on your answers, we'll create 5-8 AI-generated ad variations using proven copywriting frameworks.
+                        </p>
+                        <div class="button-group">
+                            <button type="button" class="btn btn-secondary" onclick="resetQuestionnaire()">Back</button>
+                            <button type="button" class="btn btn-primary" onclick="generateVariations()">
+                                Generate Variations ✨
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- DASHBOARD PAGE -->
+        <div id="dashboard-page" class="page">
+            <div class="dashboard-container">
+                <!-- SIDEBAR -->
+                <aside class="sidebar">
+                    <div class="logo">
+                        <div class="logo-icon">⚡</div>
+                        <span>Swipe</span>
+                    </div>
+
+                    <div class="nav-section">
+                        <div class="nav-label">Workspace</div>
+                        <div class="nav-item active" onclick="switchView('variations')">
+                            <span>✨</span>
+                            <span>Variations</span>
+                        </div>
+                        <div class="nav-item" onclick="switchView('dashboard')">
+                            <span>📊</span>
+                            <span>Dashboard</span>
+                        </div>
+                        <div class="nav-item" onclick="switchView('campaigns')">
+                            <span>🎯</span>
+                            <span>Campaigns</span>
+                        </div>
+                        <div class="nav-item" onclick="switchView('analytics')">
+                            <span>📈</span>
+                            <span>Analytics</span>
+                        </div>
+                    </div>
+
+                    <div class="nav-section">
+                        <div class="nav-label">Account</div>
+                        <div class="nav-item" onclick="switchView('settings')">
+                            <span>⚙️</span>
+                            <span>Settings</span>
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- MAIN CONTENT -->
+                <div class="main-content">
+                    <header class="header">
+                        <h1 class="header-title">Swipe Save Studio</h1>
+                        <div class="header-actions">
+                            <button class="btn btn-primary" onclick="goBackToQuestionnaire()">← New Campaign</button>
+                            <div class="user-avatar">SJ</div>
+                        </div>
+                    </header>
+
+                    <div class="content">
+                        <!-- VARIATIONS VIEW -->
+                        <div id="variations-view" style="display: block;">
+                            <div class="section-title">
+                                <span>Your AI-Generated Ad Variations</span>
+                                <button class="btn btn-primary" onclick="generateMore()">Generate More</button>
+                            </div>
+
+                            <div id="variations-output" class="variations-container"></div>
+                        </div>
+
+                        <!-- DASHBOARD VIEW -->
+                        <div id="dashboard-view" style="display: none;">
+                            <div class="section-title">Dashboard Overview</div>
+
+                            <div class="metrics-grid">
+                                <div class="metric-card">
+                                    <div class="metric-label">Average ROAS</div>
+                                    <div class="metric-value">4.2:1</div>
+                                    <div class="metric-change">↑ +34% vs last month</div>
+                                </div>
+
+                                <div class="metric-card">
+                                    <div class="metric-label">Variations Generated</div>
+                                    <div class="metric-value">847</div>
+                                    <div class="metric-change">↑ +120% this month</div>
+                                </div>
+
+                                <div class="metric-card">
+                                    <div class="metric-label">Cost Per Lead</div>
+                                    <div class="metric-value">$8.50</div>
+                                    <div class="metric-change">↓ -15% optimization</div>
+                                </div>
+
+                                <div class="metric-card">
+                                    <div class="metric-label">Active Campaigns</div>
+                                    <div class="metric-value">12</div>
+                                    <div class="metric-change">↑ +3 this week</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- CAMPAIGNS VIEW -->
+                        <div id="campaigns-view" style="display: none;">
+                            <div class="section-title">Your Campaigns</div>
+                            <p style="color: var(--text-secondary);">Manage and track your active campaigns</p>
+                        </div>
+
+                        <!-- ANALYTICS VIEW -->
+                        <div id="analytics-view" style="display: none;">
+                            <div class="section-title">Campaign Analytics</div>
+                            <p style="color: var(--text-secondary);">Detailed performance insights and metrics</p>
+                        </div>
+
+                        <!-- SETTINGS VIEW -->
+                        <div id="settings-view" style="display: none;">
+                            <div class="section-title">Account Settings</div>
+                            <p style="color: var(--text-secondary);">Manage your brand voice and preferences</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SAMPLE_VARIATIONS = [
+            {
+                framework: "PAS Framework",
+                score: "9.2/10",
+                headline: "Automate Your Marketing (Save 10 hrs/week)",
+                body: "Marketing managers waste 15+ hours weekly on manual copywriting. Our AI generates 10 variations in 5 minutes using proven frameworks. Boost ROAS 40-80% in 30 days.",
+                cta: "Start Free Trial"
+            },
+            {
+                framework: "Curiosity Hook",
+                score: "8.7/10",
+                headline: "Your Competitors Are Doing This",
+                body: "200+ agencies already use AI to generate ad copy variations. They're testing 50x more angles faster. They're winning. How long can you compete without this edge?",
+                cta: "See What They're Using"
+            },
+            {
+                framework: "Results-Driven",
+                score: "8.1/10",
+                headline: "From 2:1 ROAS to 5:1 ROAS in 30 Days",
+                body: "One SaaS client improved ROAS from 2:1 to 5:1 in 30 days using AI-generated copy variations. Same budget. Better messaging. Here's how...",
+                cta: "See the Case Study"
+            },
+            {
+                framework: "FOMO Trigger",
+                score: "7.9/10",
+                headline: "Only 50 Spots Left (Limited Time)",
+                body: "Agencies are running out of time. The best marketers are already using AI to scale. Next month, everyone will expect it. Don't get left behind.",
+                cta: "Claim Your Spot"
+            },
+            {
+                framework: "Value Stack",
+                score: "7.8/10",
+                headline: "Save Time + Save Money + Boost Results",
+                body: "Save 8 hours/week. Cut copywriting costs by 60%. Increase ROAS 40-80%. All in one platform. No credit card required.",
+                cta: "Start for Free"
+            },
+            {
+                framework: "Social Proof",
+                score: "7.6/10",
+                headline: "Trusted by 500+ Agencies",
+                body: "From solo freelancers to top 100 agencies, marketers use Swipe Save Studio daily. Join the creators revolutionizing ad copywriting.",
+                cta: "Join Them Now"
+            },
+            {
+                framework: "Problem + Solution",
+                score: "7.5/10",
+                headline: "Tired of Mediocre Ad Copy?",
+                body: "Your best copywriter just went on vacation. But your campaigns can't wait. Use AI to generate 10 winning variations before breakfast.",
+                cta: "Generate Now"
+            },
+            {
+                framework: "Risk Reversal",
+                score: "7.4/10",
+                headline: "Risk-Free for 30 Days",
+                body: "Try Swipe Save Studio for a full month. If you don't see at least 25% ROAS improvement, we'll refund every penny. No questions asked.",
+                cta: "Try It Now"
+            }
+        ];
+
+        let currentQuestion = 1;
+        const formData = {};
+
+        function selectOption(btn, fieldName) {
+            const container = btn.parentElement;
+            container.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            formData[fieldName] = btn.dataset.value;
+            setTimeout(() => nextQuestion(), 400);
+        }
+
+        function nextQuestion() {
+            if (currentQuestion < 10) {
+                currentQuestion++;
+                updateQuestionnaire();
+            }
+        }
+
+        function handleTextNext(inputId, fieldName) {
+            const input = document.getElementById(inputId);
+            if (input.value.trim() === '') {
+                alert('Please fill in this field');
+                return;
+            }
+            formData[fieldName] = input.value;
+            nextQuestion();
+        }
+
+        function updateQuestionnaire() {
+            document.querySelectorAll('.question-card').forEach((card, i) => {
+                card.classList.toggle('active', i + 1 === currentQuestion);
+            });
+
+            document.getElementById('step-current').textContent = currentQuestion;
+            document.getElementById('progress-fill').style.width = (currentQuestion / 10) * 100 + '%';
+        }
+
+        function resetQuestionnaire() {
+            if (currentQuestion > 1) {
+                currentQuestion--;
+                updateQuestionnaire();
+            }
+        }
+
+        function generateVariations() {
+            const questionnairePage = document.getElementById('questionnaire-page');
+            const dashboardPage = document.getElementById('dashboard-page');
+            
+            questionnairePage.classList.remove('active');
+            dashboardPage.classList.add('active');
+
+            const variationsOutput = document.getElementById('variations-output');
+            variationsOutput.innerHTML = SAMPLE_VARIATIONS.map((v, i) => `
+                <div class="variation-item">
+                    <div class="variation-header">
+                        <div>
+                            <span class="variation-framework">${v.framework}</span>
+                            <h3 class="variation-title">${v.headline}</h3>
+                        </div>
+                        <span class="variation-score">⭐ ${v.score}</span>
+                    </div>
+                    <p class="variation-text"><strong>Copy:</strong> ${v.body}</p>
+                    <p class="variation-text"><strong>CTA:</strong> ${v.cta}</p>                            <div class="variation-actions">
+                                <button class="action-btn" onclick="copyText('${v.headline}')">📋 Copy</button>
+                                <button class="action-btn" onclick="generateImage('${v.headline}', '${v.body}')">🎨 AI Image</button>
+                                <button class="action-btn" onclick="editVar(${i})">✏️ Edit</button>
+                                <button class="action-btn" onclick="useVar(${i})">✓ Use</button>
+                            </div>
+                </div>
+            `).join('');
+        }
+
+        function copyText(text) {
+            navigator.clipboard.writeText(text);
+            alert('Copied to clipboard!');
+        }
+
+        function editVar(id) {
+            alert('Edit variation ' + (id + 1));
+        }
+
+        function useVar(id) {
+            alert('Variation ' + (id + 1) + ' added to campaigns!');
+        }
+
+        function generateImage(headline, body) {
+            const imageModal = document.createElement('div');
+            imageModal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(255, 255, 255, 0.85);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 2000;
+                backdrop-filter: blur(8px);
+            `;
+
+            imageModal.innerHTML = `
+                <div style="
+                    border: 1px solid rgba(91, 33, 182, 0.3);
+                    border-radius: 20px;
+                    padding: 40px;
+                    max-width: 500px;
+                    text-align: center;
+                    backdrop-filter: blur(15px);
+                    box-shadow: 0 20px 60px rgba(91, 33, 182, 0.25), 0 0 40px rgba(91, 33, 182, 0.15);
+                ">
+                    <h2 style="
+                       
+                        color: #FFFFFF;
+    margin-bottom: 16px;
+    background: linear-gradient(135deg, #5B21B6, #EC4899);
+                        -webkit-background-clip: text;
+                        -webkit-text-fill-color: transparent;
+                        background-clip: text;
+                        font-size: 28px;
+                        font-weight: 700;
+                    ">🎨 Generating AI Image</h2>
+                    <p style="color: #475569; margin-bottom: 24px; font-size: 14px; line-height: 1.5;">
+                        Creating a stunning ad image for:<br><strong style="color: #0F172A;">"${headline}"</strong>
+                    </p>
+                    <div style="
+                        width: 60px;
+                        height: 60px;
+                        border: 3px solid rgba(91, 33, 182, 0.2);
+                        border-top-color: #5B21B6;
+                        border-radius: 50%;
+                        animation: spin 1s linear infinite;
+                        margin: 0 auto 24px;
+                    "></div>
+                    <p style="color: #64748B; font-size: 12px; margin-bottom: 24px;">
+                        This will take 30-60 seconds...
+                    </p>
+                    <button onclick="this.parentElement.parentElement.remove()" style="
+                        padding: 12px 28px;
+                        background: linear-gradient(135deg, #5B21B6, #7C3AED);
+                        color: #FFFFFF;
+                        border: none;
+                        border-radius: 10px;
+                        cursor: pointer;
+                        font-weight: 600;
+                        font-size: 14px;
+                        transition: all 0.3s ease;
+                        box-shadow: 0 4px 20px rgba(91, 33, 182, 0.3);
+                    " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 30px rgba(91, 33, 182, 0.4)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 20px rgba(91, 33, 182, 0.3)';">
+                        Cancel
+                    </button>
+                </div>
+            `;
+
+            document.body.appendChild(imageModal);
+
+            setTimeout(() => {
+                if (imageModal.parentElement) {
+                    imageModal.innerHTML = `
+                        <div style="
+                            border: 1px solid rgba(91, 33, 182, 0.3);
+                            border-radius: 20px;
+                            padding: 40px;
+                            max-width: 500px;
+                            text-align: center;
+                            backdrop-filter: blur(15px);
+                            box-shadow: 0 20px 60px rgba(91, 33, 182, 0.25), 0 0 40px rgba(91, 33, 182, 0.15);
+                        ">
+                            <h2 style="
+                                color: #FFFFFF;
+                                margin-bottom: 16px;
+                                background: linear-gradient(135deg, #5B21B6, #EC4899);
+                                -webkit-background-clip: text;
+                                -webkit-text-fill-color: transparent;
+                                background-clip: text;
+                                font-size: 28px;
+                                font-weight: 700;
+                            ">✨ Image Ready!</h2>
+                            <div style="
+                                width: 100%;
+                                height: 250px;
+                              
+                                border: 2px dashed rgba(91, 33, 182, 0.25);
+                                border-radius: 12px;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                margin-bottom: 24px;
+                                color: #8B5CF6;
+                                font-size: 48px;
+                            ">🖼️</div>
+                            <p style="color: #475569; margin-bottom: 24px; font-size: 14px;">
+                                Ad image generated successfully!
+                            </p>
+                            <div style="display: flex; gap: 12px; justify-content: center;">
+                                <button onclick="this.parentElement.parentElement.parentElement.remove()" style="
+                                    padding: 12px 28px;
+                                    background: linear-gradient(135deg, #5B21B6, #7C3AED);
+                                    color: #FFFFFF;
+                                    border: none;
+                                    border-radius: 10px;
+                                    cursor: pointer;
+                                    font-weight: 600;
+                                    font-size: 14px;
+                                    transition: all 0.3s ease;
+                                    box-shadow: 0 4px 20px rgba(91, 33, 182, 0.3);
+                                " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 30px rgba(91, 33, 182, 0.4)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 20px rgba(91, 33, 182, 0.3)';">
+                                    Download
+                                </button>
+                                <button onclick="this.parentElement.parentElement.parentElement.remove()" style="
+                                    padding: 12px 28px;
+                                    background: rgba(91, 33, 182, 0.15);
+                                    color: #7C3AED;
+                                    border: 1px solid rgba(91, 33, 182, 0.3);
+                                    border-radius: 10px;
+                                    cursor: pointer;
+                                    font-weight: 600;
+                                    font-size: 14px;
+                                    transition: all 0.3s ease;
+                                " onmouseover="this.style.background='rgba(91, 33, 182, 0.25)'; this.style.boxShadow='0 4px 20px rgba(91, 33, 182, 0.2)';" onmouseout="this.style.background='rgba(91, 33, 182, 0.15)'; this.style.boxShadow='';">
+                                    Close
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }
+            }, 2000);
+        }
+
+        function switchView(view) {
+            document.querySelectorAll('[id$="-view"]').forEach(el => el.style.display = 'none');
+            document.getElementById(view + '-view').style.display = 'block';
+
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            event.target.closest('.nav-item').classList.add('active');
+        }
+
+        function generateMore() {
+            alert('Generating 10 more variations...');
+        }
+
+        function goBackToQuestionnaire() {
+            currentQuestion = 1;
+            document.getElementById('questionnaire-form').reset();
+            document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+            updateQuestionnaire();
+
+            document.getElementById('dashboard-page').classList.remove('active');
+            document.getElementById('questionnaire-page').classList.add('active');
+        }
+    </script>
+</body>
+</html>
